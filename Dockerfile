@@ -35,13 +35,13 @@ RUN echo '#!/bin/sh' > /print-java-version.sh && \
 # Print the Java version using the shell script
 CMD ["/print-java-version.sh"]
 
-WORKDIR /opt/anjaliD
+WORKDIR /opt/
 #Create a new dedicated user for the Nexus with the name 'nexus'
-# RUN useradd -m anjali
-RUN groupadd --gid 200 -r anjali
-RUN useradd --uid 200 -r anjali -g anjali
-RUN echo 'anjali:anjali' | chpasswd
-RUN usermod -aG sudo anjali
+
+RUN groupadd --gid 200 -r <GROUP_NAME>
+RUN useradd --uid 200 -r <USER_NAME> -g <GROUP_NAME>
+RUN echo '<USER_NAME>':'<PASSWORD>' | chpasswd
+RUN usermod -aG sudo <USER_NAME>
 
 
 # Download and install Nexus Repository Manager
@@ -50,9 +50,9 @@ RUN curl -L -o /tmp/nexus.tar.gz https://download.sonatype.com/nexus/3/nexus-3.6
     mv /opt/nexus-* /opt/nexus && \
     rm /tmp/nexus.tar.gz 
 
-RUN chown -R anjali:anjali /opt/nexus /opt/sonatype-work
-RUN chown -R anjali:anjali /opt/sonatype-work/nexus3
-RUN echo 'run_as_user="anjali"'  > /opt/nexus/bin/nexus.rc
+RUN chown -R <USER_NAME>:<GROUP_NAME> /opt/nexus /opt/sonatype-work
+RUN chown -R <USER_NAME>:<GROUP_NAME> /opt/sonatype-work/nexus3
+RUN echo 'run_as_user="<USER_NAME>"'  > /opt/nexus/bin/nexus.rc
 
 COPY nexus.service /etc/systemd/system/
 COPY nexus.vmoptions /etc/nexus/bin/
@@ -62,12 +62,11 @@ RUN echo "#!/bin/bash" >> /opt/start-nexus-repository-manager.sh \
    && echo "exec ./bin/nexus run" >> /opt/start-nexus-repository-manager.sh \
    && chmod a+x /opt/start-nexus-repository-manager.sh
  #  && sed -e '/^nexus-context/ s:$:'':' -i /opt/nexus/nexus/etc/nexus-default.properties
-# COPY nexus.properties /opt/sonatype-work/nexus3/etc/
+
 # Expose Nexus port
-# EXPOSE 8085
 EXPOSE 8081
 RUN sleep 30
-USER anjali
+USER <USER_NAME>
 ENV INSTALL4J_ADD_VM_PARAMS="-Xms2703m -Xmx2703m -XX:MaxDirectMemorySize=2703m -Djava.util.prefs.userRoot=/nexus-data/javaprefs"
 CMD ["/opt/nexus/bin/nexus", "run"]
 
